@@ -1,4 +1,6 @@
 # Generic/Built-in
+from glob import glob
+from asyncio import sleep
 
 # Other Libs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -11,6 +13,21 @@ from ..db import db
 
 PREFIX = "." # Prefix constant
 OWNER_IDS = [175990133240233984] # List of owner ids
+COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
+
+
+class Ready(object):
+	def __init__(self):
+		for cog in COGS:
+			setattr(self, cog, False)
+
+	def ready_up(self, cog):
+		setattr(self, cog, True)
+		print(f" {cog} cog ready")
+
+	def all_ready(self):
+		return all([getattr(self, cog) for cog in COGS])
+
 
 class Bot(BotBase):
 	"""
@@ -25,11 +42,21 @@ class Bot(BotBase):
         """
 		self.PREFIX = PREFIX
 		self.ready = False
+		self.cogs_ready = Ready()
+
 		# self.guild = None # Single server 
 		self.scheduler = AsyncIOScheduler() #
 
 		db.autosave(self.scheduler)
 		super().__init__(command_prefix=PREFIX, owner_ids=OWNER_IDS)
+
+
+	def setup(self):
+		for cog in COGS:
+			self.load_extension(f"lib.cogs.{cog}")
+			print(f" {cog} cog loaded")
+
+		print("setup complete\n")
 
 	def run(self, version):
 		"""
@@ -40,11 +67,15 @@ class Bot(BotBase):
 		"""
 		self.VERSION = version
 
+		print("running setup...")
+		self.setup()
+
 		with open("./lib/bot/token.0", "r", encoding="utf-8") as tf:
 			self.TOKEN = tf.read() # Read the token from "./lib/bot/token.0"
 
 		print("running bot...")
 		super().run(self.TOKEN, reconnect=True)
+
 
 	async def on_connect(self):
 		"""
@@ -53,7 +84,7 @@ class Bot(BotBase):
 			TODO:
 				* Do the docstring
 	    """
-		print("Bot connected")
+		print(" bot connected")
 
 	async def on_disconnect(self):
 		"""
@@ -62,7 +93,7 @@ class Bot(BotBase):
 			TODO:
 				* Do the docstring
 	    """
-		print("Bot disconnected")
+		print("bot disconnected")
 
 	async def on_error(self, err, *args, **kwargs):
 		"""
@@ -111,14 +142,16 @@ class Bot(BotBase):
 				* Do the docstring
 	    """
 		if not self.ready:
-			self.ready = True
 			# self.guild = self.get_guild(549103172275404810) # Single server 
 			self.scheduler.start()
 
+			while not self.cogs_ready.all_ready():
+				await sleep(0.5)
 
-			print("bot ready")
+			self.ready = True
+			print(" bot ready")
 		else:
-			print("bot reconnected")
+			print(" bot reconnected")
 
 	async def on_message(self, message):
 		"""
