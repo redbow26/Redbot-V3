@@ -1,5 +1,13 @@
+# Generic/Built-in
+
+# Other Libs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from discord import Embed
 from discord.ext.commands import Bot as BotBase
+from discord.ext.commands import CommandNotFound
+
+# Other Imports
+from ..db import db
 
 PREFIX = "." # Prefix constant
 OWNER_IDS = [175990133240233984] # List of owner ids
@@ -20,6 +28,7 @@ class Bot(BotBase):
 		# self.guild = None # Single server 
 		self.scheduler = AsyncIOScheduler() #
 
+		db.autosave(self.scheduler)
 		super().__init__(command_prefix=PREFIX, owner_ids=OWNER_IDS)
 
 	def run(self, version):
@@ -55,6 +64,45 @@ class Bot(BotBase):
 	    """
 		print("Bot disconnected")
 
+	async def on_error(self, err, *args, **kwargs):
+		"""
+		Summary line
+
+	        Parameters: 
+		        err (): 
+		        *args: Variable length argument list.
+		        **kwargs: Arbitrary keyword arguments.
+
+			TODO:
+				* Do the docstring
+		"""
+		if err == "on_command_error":
+			await args[0].send("Something went wrong.")
+
+		raise
+
+
+	async def on_command_error(self, ctx, exc):
+		"""
+		Summary line
+		
+	        Parameters: 
+		        ctx ():
+		        exc ():
+
+			TODO:
+				* Do the docstring
+		"""
+		if isinstance(exc, CommandNotFound):
+			pass
+
+		elif hasattr(exc, "original"):
+			raise exc.original
+
+		else:
+			raise exc
+
+
 	async def on_ready(self):
 		"""
 		Summary line
@@ -65,8 +113,10 @@ class Bot(BotBase):
 		if not self.ready:
 			self.ready = True
 			# self.guild = self.get_guild(549103172275404810) # Single server 
-			print("bot ready")
+			self.scheduler.start()
 
+
+			print("bot ready")
 		else:
 			print("bot reconnected")
 
