@@ -1,4 +1,5 @@
 token.0
 *.db
 *.db-journal
+*.log
 __pycache__

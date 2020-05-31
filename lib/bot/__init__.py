@@ -1,6 +1,7 @@
 # Generic/Built-in
 from glob import glob
 from asyncio import sleep
+import logging
 
 # Other Libs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -13,19 +14,50 @@ from ..db import db
 
 PREFIX = "." # Prefix constant
 OWNER_IDS = [175990133240233984] # List of owner ids
-COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")]
+COGS = [path.split("\\")[-1][:-3] for path in glob("./lib/cogs/*.py")] # List of all the cogs
 
+# Get logger
+# TODO: Do logger system
+discord_logger = logging.getLogger('discord')
+logger = logging.getLogger("redbot")
 
 class Ready(object):
+	"""
+	Summary line
+
+		TODO:
+			* Do the docstring
+	"""
 	def __init__(self):
+		"""
+		Summary line
+
+			TODO:
+				* Do the docstring
+		"""
 		for cog in COGS:
 			setattr(self, cog, False)
 
 	def ready_up(self, cog):
+		"""
+		Summary line
+
+			Parameters: 
+				cog (string): Cog who need to set ready 
+
+			TODO:
+				* Do the docstring
+		"""
 		setattr(self, cog, True)
 		print(f" {cog} cog ready")
 
 	def all_ready(self):
+		"""
+		Summary line
+
+			TODO:
+				* Do the docstring
+		"""
 		return all([getattr(self, cog) for cog in COGS])
 
 
@@ -35,11 +67,9 @@ class Bot(BotBase):
 
 		TODO:
 			* Do the docstring
-    """
+	"""
 	def __init__(self):
-		"""
-
-        """
+		"""Initialise new bot"""
 		self.PREFIX = PREFIX
 		self.ready = False
 		self.cogs_ready = Ready()
@@ -61,9 +91,9 @@ class Bot(BotBase):
 	def run(self, version):
 		"""
 		Start and run the bot
-	  
-	        Parameters: 
-		        version (string): String to define the version of the bot
+	
+			Parameters: 
+				version (string): Define the version of the bot
 		"""
 		self.VERSION = version
 
@@ -83,7 +113,7 @@ class Bot(BotBase):
 
 			TODO:
 				* Do the docstring
-	    """
+		"""
 		print(" bot connected")
 
 	async def on_disconnect(self):
@@ -92,17 +122,17 @@ class Bot(BotBase):
 
 			TODO:
 				* Do the docstring
-	    """
+		"""
 		print("bot disconnected")
 
 	async def on_error(self, err, *args, **kwargs):
 		"""
 		Summary line
 
-	        Parameters: 
-		        err (): 
-		        *args: Variable length argument list.
-		        **kwargs: Arbitrary keyword arguments.
+			Parameters: 
+				err (): 
+				*args: Variable length argument list.
+				**kwargs: Arbitrary keyword arguments.
 
 			TODO:
 				* Do the docstring
@@ -117,9 +147,9 @@ class Bot(BotBase):
 		"""
 		Summary line
 		
-	        Parameters: 
-		        ctx ():
-		        exc ():
+			Parameters: 
+				ctx ():
+				exc ():
 
 			TODO:
 				* Do the docstring
@@ -140,7 +170,7 @@ class Bot(BotBase):
 
 			TODO:
 				* Do the docstring
-	    """
+		"""
 		if not self.ready:
 			# self.guild = self.get_guild(549103172275404810) # Single server 
 			self.scheduler.start()
@@ -159,8 +189,9 @@ class Bot(BotBase):
 
 			TODO:
 				* Do the docstring
-	    """
-		pass
+		"""
+		if not message.author.bot:
+			await self.process_commands(message)
 
 
 bot = Bot()
